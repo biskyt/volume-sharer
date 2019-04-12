@@ -1,3 +1,6 @@
+# Forked from [gdiepen/volume-sharer](https://github.com/gdiepen/volume-sharer)
+This is a fork of the excellent work from @gdiepen. Currently the only reason that this fork exists is to create an auto-builds on docker hub built from new sources (including the latest [dperson/samba](https://github.com/dperson/samba) base image). I have also added builds for armhf, and aarch64. These simply use the relevant [dperson/samba](https://github.com/dperson/samba) arch builds. Nothing more, nothing less
+
 # volume-sharer
 
 On my windows 10 laptop from work it is possible to make use of Docker, but due to security restrctions that are in place, I am not able to bind mount a windows folder in a container.

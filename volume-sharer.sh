@@ -246,6 +246,47 @@ shift $(( OPTIND - 1 ))
 [[ "${WIDELINKS:-""}" ]] && widelinks
 [[ "${INCLUDE:-""}" ]] && include "$INCLUDE"
 
+echo "include = /etc/samba/volume_shares.conf" >> /etc/samba/smb.conf
+
+volumeshare() { local share="$1" path="$2" browsable="${3:-yes}" ro="${4:-yes}" \
+                guest="${5:-yes}" users="${6:-""}" admins="${7:-""}" \
+                writelist="${8:-""}" comment="${9:-""}" file=/etc/samba/volume_shares.conf
+    sed -i "/\\[$share\\]/,/^\$/d" $file
+    echo "[$share]" >>$file
+    echo "   path = $path" >>$file
+    echo "   browsable = $browsable" >>$file
+    echo "   read only = $ro" >>$file
+    echo "   guest ok = $guest" >>$file
+    echo -n "   veto files = /._*/.apdisk/.AppleDouble/.DS_Store/" >>$file
+    echo -n ".TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/" >>$file
+    echo "Network Trash Folder/Temporary Items/Thumbs.db/" >>$file
+    echo "   delete veto files = yes" >>$file
+    [[ ${users:-""} && ! ${users:-""} =~ all ]] &&
+        echo "   valid users = $(tr ',' ' ' <<< $users)" >>$file
+    [[ ${admins:-""} && ! ${admins:-""} =~ none ]] &&
+        echo "   admin users = $(tr ',' ' ' <<< $admins)" >>$file
+    [[ ${writelist:-""} && ! ${writelist:-""} =~ none ]] &&
+        echo "   write list = $(tr ',' ' ' <<< $writelist)" >>$file
+    [[ ${comment:-""} && ! ${comment:-""} =~ none ]] &&
+        echo "   comment = $(tr ',' ' ' <<< $comment)" >>$file
+    echo "" >>$file
+    [[ -d $path ]] || mkdir -p $path
+}
+
+
+create_volume_shares(){
+    #Now loop over all of the volume shares
+    rm -f /etc/samba/volume_shares.conf
+    touch /etc/samba/volume_shares.conf
+    for docker_volume in `docker volume ls | grep "^local" | sed 's/^local *//'`
+    do
+        eval volumeshare ${docker_volume} "/docker_volumes/${docker_volume}/_data" "yes" "no"
+    done
+}
+
+
+create_volume_shares
+
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
 elif [[ $# -ge 1 ]]; then
@@ -256,4 +297,13 @@ elif ps -ef | egrep -v grep | grep -q smbd; then
 else
     [[ ${NMBD:-""} ]] && ionice -c 3 nmbd -D
     exec ionice -c 3 smbd -FS --no-process-group </dev/null
+
+    echo "Listening for docker volume events"
+    docker events --filter "type=volume" | while read aaa
+        do
+        echo "Recreating the volume shares and restarting Samba"
+        create_volume_shares
+
+        killall -HUP smbd nmbd
+    done
 fi

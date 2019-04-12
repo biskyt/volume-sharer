@@ -1,5 +1,13 @@
 # Forked from [gdiepen/volume-sharer](https://github.com/gdiepen/volume-sharer)
-This is a fork of the excellent work from @gdiepen. Currently the only reason that this fork exists is to create an auto-builds on docker hub built from new sources (including the latest [dperson/samba](https://github.com/dperson/samba) base image). I have also added builds for armhf, and aarch64. These simply use the relevant [dperson/samba](https://github.com/dperson/samba) arch builds. Nothing more, nothing less
+This is a fork of the excellent work from @gdiepen.
+
+## Changes from [gdiepen/volume-sharer](https://github.com/gdiepen/volume-sharer):
+* Move to alpine, which significantly reduces image size and memory footprint
+  * using latest [dperson/samba](https://github.com/dperson/samba) alpine base image
+* Auto-build on docker hub
+* Add auto-builds for armhf and aarch64 versions (tags)
+* Tidy up bash script to make it a little easier to maintain when there are future upstream changes from @dperson
+
 
 # volume-sharer
 
@@ -19,7 +27,7 @@ This means that we will need the following:
 When running under windows, it will typically already run the SMB shares on the ports 139 and 445 so you cannot use these ports. In order to work around this, you can state that you do not want to bind the ports to the windows host system, but that I want to bind them to the docker image running in Hyper-V.
 
 This is achieved by giving it the same net as the Hyper-V by using the following commandline:
-```docker run --name volume-sharer  --rm -v /var/lib/docker/volumes:/docker_volumes -p 139:139 -p 445:445  -v /var/run/docker.sock:/var/run/docker.sock --net=host -d gdiepen/volume-sharer``` 
+```docker run --name volume-sharer  --rm -v /var/lib/docker/volumes:/docker_volumes -p 139:139 -p 445:445  -v /var/run/docker.sock:/var/run/docker.sock --net=host -d gdiepen/volume-sharer```
 
 
 
@@ -31,5 +39,3 @@ If you don't have samba running on your host-system, you can bind the ports. The
 
 ##More details
 I have placed more information on my blog article: https://www.guidodiepen.nl/2017/08/sharing-all-your-docker-data-volumes-via-samba/
-
-

@@ -1,5 +1,5 @@
 # Forked from [gdiepen/volume-sharer](https://github.com/gdiepen/volume-sharer)
-This is a fork of the excellent work from @gdiepen.
+This is a fork of the excellent work from @gdiepen, which is in turn based on the work of @dperson
 
 ## Changes from [gdiepen/volume-sharer](https://github.com/gdiepen/volume-sharer):
 * Move to alpine, which significantly reduces image size and memory footprint
